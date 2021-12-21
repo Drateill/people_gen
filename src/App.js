@@ -76,7 +76,6 @@ const handleNumberChange = (event) => {
 useEffect(() => {
   generatePeople(number);
   setPeopleList(people);
-  console.log(people)
 }, [number]);
 
   return (
