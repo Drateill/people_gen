@@ -1,13 +1,16 @@
 import './App.css';
 import { useEffect, useState } from 'react';
 
-const faker = require('faker/locale/fr');
+const faker = require('faker');
 faker.locale = "fr";
 
 function App() {
 
   const [number, setNumber] = useState(0);
   const [peopleList, setPeopleList] = useState([]);
+  const [FilteredpeopleList, setFilteredPeopleList] = useState([]);
+
+
   //Create array of objects
   //Function to generade random people
   const people = [];
@@ -18,8 +21,8 @@ function App() {
     var firstName = faker.name.firstName();
     var lastName = faker.name.lastName();
     var streetName = faker.address.streetName();
-    var city = faker.address.city();
-    var streetNumber = faker.address.streetAddress();
+    var city = faker.address.cityName();
+    var streetNumber = Math.floor(Math.random() * (999 - 1) + 1);
     var zipCode = faker.address.zipCode();
     var birthDate = faker.date.past().toDateString();
     var phoneNumber = faker.phone.phoneNumber();
@@ -48,12 +51,51 @@ function App() {
       zipCode: zipCode,
       birthDate: birthDate,
       phoneNumber: phoneNumber,
-      cards: cards
+      cards: cards,
+      transactions: createTransaction()
 
     });
     setPeopleList(people);
+    setFilteredPeopleList(people);
+    
   }
 }
+console.log(FilteredpeopleList);
+//Create transaction array
+
+function createTransaction(){
+  const transactions = [];
+    for (var i = 0; i < Math.floor(Math.random() * (25 - 1) + 1); i++) {
+    var id = i;
+    var transactionDate = faker.date.past().toDateString();
+    var transactionAmount = Math.floor(Math.random() * (999 - 5) + 5);
+    var transactionType = Math.floor(Math.random() * 2) === 0 ? 'debit' : 'credit';
+    var transactionDescription = faker.finance.transactionDescription();
+
+    transactions.push({
+      id: id,
+      transactionDate: transactionDate,
+      transactionAmount: transactionAmount,
+      transactionType: transactionType,
+      transactionDescription: transactionDescription
+    });
+    
+  }
+  return transactions
+}
+
+
+
+
+//filter people by zipcode starting by the input
+function filterPeople(zipCode) {
+  var filteredPeople = peopleList.filter(function(person) {
+    return person.zipCode.startsWith(zipCode);
+  });
+  setFilteredPeopleList(filteredPeople);
+}
+
+
  
 const handleSaveToPC = (people) => {
   const fileName = 'people.json';
@@ -83,16 +125,18 @@ useEffect(() => {
       {/* Create a card for each people */}
       {/* handleSaveToPC Button */}
       <div className="App-header">
-      <button onClick={() => handleSaveToPC(peopleList)}>Save to PC</button>
       <input type="number" placeholder="Number of people" onChange={(e) => handleNumberChange(e.target.value)}/>
+      {/* Input filter by zipcode */}
+      <input type="text" placeholder="Filter by zipcode" onChange={(e) => filterPeople(e.target.value)}/>
+      <button onClick={() => handleSaveToPC(FilteredpeopleList)}>Save to PC</button>
       </div>
-      {peopleList.map(person => (
+      {FilteredpeopleList.map(person => (
         <div className="card" key={person.id}>
           <div className="card-header">
             <h3>{person.firstName} {person.lastName}</h3>
           </div>
           <div className="card-body">
-            <p>{person.streetNumber} {faker.address.streetPrefix} {person.streetName} </p>
+            <p>{person.streetNumber} {faker.address.streetPrefix()} {person.streetName} </p>
             <p>Ville : {person.city}</p>
             <p>Zipcode : {person.zipCode}</p>
             <p>{person.birthDate}</p>

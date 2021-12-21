@@ -17,15 +17,17 @@
 }
 
 .App-header {
-  min-height: 100vh;
+  max-height: 2em;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   font-size: calc(10px + 2vmin);
   color: white;
-  left: 2%;
+  left: 30%;
   top:2%;
   position: fixed;
   z-index: 1;
+  align-items: center;
+  justify-content: center;
 }
 
 .App-link {
