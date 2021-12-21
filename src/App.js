@@ -114,6 +114,17 @@ const handleNumberChange = (event) => {
   setNumber(event);
 }
 
+//function to Show/hide modal
+const [showModal, setShowModal] = useState(false);
+const [showCard, setShowCard] = useState(false);
+
+const handleModal = () => setShowModal(!showModal);
+const handleCard = () => setShowCard(!showCard);
+
+
+
+
+
 //update the state of the number of people
 useEffect(() => {
   generatePeople(number);
@@ -141,16 +152,36 @@ useEffect(() => {
             <p>Zipcode : {person.zipCode}</p>
             <p>{person.birthDate}</p>
             <p>{person.phoneNumber}</p>
+            <button onClick={() => handleCard(person)}>Cartes</button>
             <p>{person.cards.map(card => (
-              <div className="card-body" key={card.cardCVV}>
+              <div className="card-body" style={{display : showCard ? "block" : "none"}}  key={card.cardCVV}>
                 <p>{card.cardType} : {card.cardNumber}</p>
                 <p>Expire : {card.cardExpiry}</p>  
                 <p>Cryptograme : {card.cardCVV}</p>
               </div>
             ))}</p>
-
+{/* Button handleModal */}
+            <button onClick={() => handleModal(person)}>Transactions</button>
             </div>
-
+            
+              {/* Create a modal to show transactions */}
+              <div className="modal" style={{display : showModal ? "block" : "none"}}>
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h3>Transactions</h3>
+                  </div>
+                  <div className="modal-body">
+                    {person.transactions.map(transaction => (
+                      <div className="card-body" key={transaction.id}>
+                        <p>Date : {transaction.transactionDate}</p>
+                        <p>Montant : {transaction.transactionAmount}</p>
+                        <p>Type : {transaction.transactionType}</p>
+                        <p>Description : {transaction.transactionDescription}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
           </div>))}
     </div>
   );
