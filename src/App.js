@@ -8,22 +8,29 @@ function App() {
 
   const [number, setNumber] = useState(0);
   const [peopleList, setPeopleList] = useState([]);
-  const [FilteredpeopleList, setFilteredPeopleList] = useState([]);
 
-
-  //Create array of objects
   //Function to generade random people
   const people = [];
-  function generatePeople(number) {
+  async function generatePeople(number) {
   for (var i = 0; i < number; i++) {
     var cards = [];
+    var zipCode=faker.address.zipCode();
     var id = i;
     var firstName = faker.name.firstName();
     var lastName = faker.name.lastName();
     var streetName = faker.address.streetName();
-    var city = faker.address.cityName();
     var streetNumber = Math.floor(Math.random() * (999 - 1) + 1);
-    var zipCode = faker.address.zipCode();
+    var city = faker.address.cityName();
+
+
+    const result = await fetch(`https://vicopo.selfbuild.fr/ville/${city}`);
+    const data = await result.json();
+    //If data is not empty, set the state 
+    if (data.cities.length !==0){
+      zipCode=data.cities[0].code;
+      console.log(data.cities[0]);
+    }
+    
     var birthDate = faker.date.past().toDateString();
     var phoneNumber = faker.phone.phoneNumber();
 
@@ -55,12 +62,9 @@ function App() {
       transactions: createTransaction()
 
     });
-    setPeopleList(people);
-    setFilteredPeopleList(people);
-    
   }
+  setPeopleList(people);
 }
-console.log(FilteredpeopleList);
 //Create transaction array
 
 function createTransaction(){
@@ -83,18 +87,6 @@ function createTransaction(){
   }
   return transactions
 }
-
-
-
-
-//filter people by zipcode starting by the input
-function filterPeople(zipCode) {
-  var filteredPeople = peopleList.filter(function(person) {
-    return person.zipCode.startsWith(zipCode);
-  });
-  setFilteredPeopleList(filteredPeople);
-}
-
 
  
 const handleSaveToPC = (people) => {
@@ -121,27 +113,16 @@ const [showCard, setShowCard] = useState(false);
 const handleModal = () => setShowModal(!showModal);
 const handleCard = () => setShowCard(!showCard);
 
-
-
-
-
-//update the state of the number of people
-useEffect(() => {
-  generatePeople(number);
-  setPeopleList(people);
-}, [number]);
-
   return (
     <div className="App">
       {/* Create a card for each people */}
       {/* handleSaveToPC Button */}
       <div className="App-header">
       <input type="number" placeholder="Number of people" onChange={(e) => handleNumberChange(e.target.value)}/>
-      {/* Input filter by zipcode */}
-      <input type="text" placeholder="Filter by zipcode" onChange={(e) => filterPeople(e.target.value)}/>
-      <button onClick={() => handleSaveToPC(FilteredpeopleList)}>Save to PC</button>
+      <button onClick={() => generatePeople(number)}>Generate</button>
+      <button onClick={() => handleSaveToPC(people)}>Save to PC</button>
       </div>
-      {FilteredpeopleList.map(person => (
+      {peopleList.map(person => (
         <div className="card" key={person.id}>
           <div className="card-header">
             <h3>{person.firstName} {person.lastName}</h3>
