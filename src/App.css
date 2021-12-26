@@ -22,7 +22,6 @@
   flex-direction: row;
   font-size: calc(10px + 2vmin);
   color: white;
-  left: 30%;
   top:2%;
   position: fixed;
   z-index: 1;

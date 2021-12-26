@@ -8,6 +8,8 @@ function App() {
 
   const [number, setNumber] = useState(0);
   const [peopleList, setPeopleList] = useState([]);
+  const [transaction, setTransaction] = useState(false);
+  const [card, setCard] = useState(false);
 
   //Function to generade random people
   const people = [];
@@ -28,13 +30,13 @@ function App() {
     //If data is not empty, set the state 
     if (data.cities.length !==0){
       zipCode=data.cities[0].code;
-      console.log(data.cities[0]);
     }
     
     var birthDate = faker.date.past().toDateString();
     var phoneNumber = faker.phone.phoneNumber();
 
-    for (var j = 0; j< Math.floor(Math.random() * 2) + 1; j++) {
+    if(card){
+          for (var j = 0; j< Math.floor(Math.random() * 2) + 1; j++) {
       var cardNumber = faker.finance.creditCardNumber();
       //50% chance of having type as visa card and 50% chance of type as mastercard
       var cardType = Math.floor(Math.random() * 2) === 0 ? 'Visa' : 'Mastercard';
@@ -47,6 +49,9 @@ function App() {
         cardExpiry: cardExpiry,
         cardCVV: cardCVV
     })};
+    }
+
+
 
     people.push({
       id: id,
@@ -59,7 +64,7 @@ function App() {
       birthDate: birthDate,
       phoneNumber: phoneNumber,
       cards: cards,
-      transactions: createTransaction()
+      transactions: transaction ? createTransaction() : null
 
     });
   }
@@ -106,6 +111,72 @@ const handleNumberChange = (event) => {
   setNumber(event);
 }
 
+//function to export people list to csv file
+const handleExportToCSV = (people) => {
+  const fileName = 'people.csv';
+  const fileType = 'text/csv;charset=utf-8';
+  const fileContent = people.map(person => {
+    return {
+      firstName: person.firstName,
+      lastName: person.lastName,
+      streetName: person.streetName,
+      city: person.city,
+      streetNumber: person.streetNumber,
+      zipCode: person.zipCode,
+      birthDate: person.birthDate,
+      phoneNumber: person.phoneNumber,
+      cards: person.cards.map(card => {
+        return {
+          cardNumber: card.cardNumber,
+          cardType: card.cardType,
+          cardExpiry: card.cardExpiry,
+          cardCVV: card.cardCVV
+        }
+      }),
+      transactions: transaction? person.transactions.map(transaction => {
+        return {
+          transactionDate: transaction.transactionDate,
+          transactionAmount: transaction.transactionAmount,
+          transactionType: transaction.transactionType,
+          transactionDescription: transaction.transactionDescription
+        }
+      }) : null
+    }
+  }
+  )
+  const fileContentString = fileContent.map(person => {
+    return [
+      person.firstName,
+      person.lastName,
+      person.streetName,
+      person.city,
+      person.streetNumber,
+      person.zipCode,
+      person.birthDate,
+      person.phoneNumber,
+      card ? person.cards.map(card => {
+        return `${card.cardNumber}, ${card.cardType}, ${card.cardExpiry}, ${card.cardCVV}`
+      }): null,
+      transaction ? person.transactions.map(transaction => {
+        return `${transaction.transactionDate}, ${transaction.transactionAmount}, ${transaction.transactionType}, ${transaction.transactionDescription}`
+      }) : null
+    ].join(',');
+  }
+  ).join('\n');
+  const blob = new Blob([fileContentString], { type: fileType });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  console.log("fileContent: ", fileContent)
+  console.log("fileContentString: ", fileContentString)
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
+
+    
+
 //function to Show/hide modal
 const [showModal, setShowModal] = useState(false);
 const [showCard, setShowCard] = useState(false);
@@ -119,8 +190,14 @@ const handleCard = () => setShowCard(!showCard);
       {/* handleSaveToPC Button */}
       <div className="App-header">
       <input type="number" placeholder="Number of people" onChange={(e) => handleNumberChange(e.target.value)}/>
+      {/* Checkbox for transaction generation */}
+      <input type="checkbox" id="transaction" onClick={() => setTransaction(!transaction)}/> Transactions ? 
+      {/* Checkbox for card generation */}
+      <input type="checkbox" id="card" onClick={() => setCard(!card)}/> Card ?
       <button onClick={() => generatePeople(number)}>Generate</button>
-      <button onClick={() => handleSaveToPC(people)}>Save to PC</button>
+      <button onClick={() => handleExportToCSV(peopleList)}>Save to PC in CSV</button>
+      <button onClick={() => handleSaveToPC(peopleList)}>Save to PC in Json</button>
+
       </div>
       {peopleList.map(person => (
         <div className="card" key={person.id}>
@@ -152,14 +229,14 @@ const handleCard = () => setShowCard(!showCard);
                     <h3>Transactions</h3>
                   </div>
                   <div className="modal-body">
-                    {person.transactions.map(transaction => (
+                    {transaction ? person.transactions.map(transaction => (
                       <div className="card-body" key={transaction.id}>
                         <p>Date : {transaction.transactionDate}</p>
                         <p>Montant : {transaction.transactionAmount}</p>
                         <p>Type : {transaction.transactionType}</p>
                         <p>Description : {transaction.transactionDescription}</p>
                       </div>
-                    ))}
+                    )): null}
                   </div>
                 </div>
               </div>
