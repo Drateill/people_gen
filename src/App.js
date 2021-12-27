@@ -111,10 +111,10 @@ const handleNumberChange = (event) => {
   setNumber(event);
 }
 
-//function to export people list to csv file
+//function to export people list to csv file in utf-8 format
 const handleExportToCSV = (people) => {
   const fileName = 'people.csv';
-  const fileType = 'text/csv;charset=utf-8';
+  const fileType = 'text/csv;charset=UTF-8';
   const fileContent = people.map(person => {
     return {
       firstName: person.firstName,
